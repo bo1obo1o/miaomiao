@@ -1,6 +1,22 @@
 <template>
   <div id="main">
-    <Header title="喵喵影院" /> cinema
+    <Header title="喵喵影院" />
+    <div id="content">
+      <div class="cinema_menu">
+        <div class="city_switch">
+          全城 <i class="iconfont icon-lower-triangle"></i>
+        </div>
+        <div class="brand_swtich">
+          品牌 <i class="iconfont icon-lower-triangle"></i>
+        </div>
+        <div class="feature_switch">
+          特色 <i class="iconfont icon-lower-triangle"></i>
+        </div>
+      </div>
+      <!-- 此处如果是二级路由则写成router-view的形式，此处只有一个组件所以直接引用 -->
+      <CinemaList />
+    </div>
+
     <TabBar />
   </div>
 </template>
@@ -8,15 +24,25 @@
 <script>
 import Header from "@/components/Header";
 import TabBar from "@/components/TabBar";
+import CinemaList from "@/components/CinemaList";
 export default {
   name: "Cinema",
   components: {
     Header,
     TabBar,
+    CinemaList,
   },
 };
 </script>
 
-<style lang="sass" scoped>
-
-</style>>
+<style scoped>
+#content .cinema_menu {
+  width: 100%;
+  height: 45px;
+  border-bottom: 1px solid #e6e6e6;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: white;
+}
+</style>

@@ -5,7 +5,16 @@ import cinemaRouter from './cinema';
 import mineRouter from './mine';
 Vue.use(VueRouter);
 
-const routes = [movieRouter, cinemaRouter, mineRouter];
+const routes = [
+  movieRouter,
+  cinemaRouter,
+  mineRouter,
+  //路由重定向
+  {
+    path: '/*',
+    redirect: '/movie',
+  },
+];
 
 const router = new VueRouter({
   mode: 'history',
