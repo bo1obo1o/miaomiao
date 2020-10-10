@@ -3,8 +3,13 @@ import Vue from 'vue';
 import App from './App.vue';
 import router from './router';
 import store from './store';
-
-Vue.config.productionTip = false;
+//引入axios,全局配置axios对象
+import axios from 'axios';
+Vue.prototype.axios = axios;
+//创建一个处理图片尺寸的全局过滤器
+Vue.filter('setWh', (url, arg) => {
+  return url.replace(/w\.h/, arg);
+});
 
 new Vue({
   router,
