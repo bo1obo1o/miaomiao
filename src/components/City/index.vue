@@ -1,83 +1,38 @@
 <template>
   <div class="city_body">
     <div class="city_list">
+      <!-- 热门城市 -->
       <div class="city_hot">
         <h2>热门城市</h2>
         <ul class="clearfix">
-          <li>上海</li>
-          <li>北京</li>
-          <li>上海</li>
-          <li>北京</li>
-          <li>上海</li>
-          <li>北京</li>
-          <li>上海</li>
-          <li>北京</li>
+          <li v-for="item in hotList" :key="item.id">
+            {{ item.nm }}
+          </li>
         </ul>
       </div>
-      <div class="city_sort">
-        <div>
-          <h2>A</h2>
+      <!-- 城市列表 -->
+      <div class="city_sort" ref="city_sort">
+        <!-- 新数组形式为[ { index : 'A' , list : [{ nm : '阿城' , id : 123 }] } ] -->
+        <div v-for="item in cityList" :key="item.index">
+          <h2>{{ item.index }}</h2>
           <ul>
-            <li>阿拉善盟</li>
-            <li>鞍山</li>
-            <li>安庆</li>
-            <li>安阳</li>
-          </ul>
-        </div>
-        <div>
-          <h2>B</h2>
-          <ul>
-            <li>北京</li>
-            <li>保定</li>
-            <li>蚌埠</li>
-            <li>包头</li>
-          </ul>
-        </div>
-        <div>
-          <h2>A</h2>
-          <ul>
-            <li>阿拉善盟</li>
-            <li>鞍山</li>
-            <li>安庆</li>
-            <li>安阳</li>
-          </ul>
-        </div>
-        <div>
-          <h2>B</h2>
-          <ul>
-            <li>北京</li>
-            <li>保定</li>
-            <li>蚌埠</li>
-            <li>包头</li>
-          </ul>
-        </div>
-        <div>
-          <h2>A</h2>
-          <ul>
-            <li>阿拉善盟</li>
-            <li>鞍山</li>
-            <li>安庆</li>
-            <li>安阳</li>
-          </ul>
-        </div>
-        <div>
-          <h2>B</h2>
-          <ul>
-            <li>北京</li>
-            <li>保定</li>
-            <li>蚌埠</li>
-            <li>包头</li>
+            <li v-for="itemList in item.list" :key="itemList.id">
+              {{ itemList.nm }}
+            </li>
           </ul>
         </div>
       </div>
     </div>
+    <!-- 右侧字母索引 -->
     <div class="city_index">
       <ul>
-        <li>A</li>
-        <li>B</li>
-        <li>C</li>
-        <li>D</li>
-        <li>E</li>
+        <li
+          v-for="(item, index) in cityList"
+          :key="item.index"
+          @touchstart="handleToIndex(index)"
+        >
+          {{ item.index }}
+        </li>
       </ul>
     </div>
   </div>
@@ -86,6 +41,90 @@
 <script>
 export default {
   name: "City",
+  data() {
+    return {
+      cityList: [],
+      hotList: [],
+    };
+  },
+  mounted() {
+    this.axios.get("/dianying/cities.json").then((res) => {
+      var cities = res.data.cts;
+      //将获取到的城市数据分为数组[ { index : 'A' , list : [{ nm : '阿城' , id : 123 }] } ]
+      var { cityList, hotList } = this.formatCityList(cities);
+      //用formatCityList函数的返回值对列表赋值
+      this.cityList = cityList;
+      this.hotList = hotList;
+    });
+  },
+  methods: {
+    formatCityList(cities) {
+      var cityList = [];
+      var hotList = [];
+      //热门城市列表
+      for (var i = 0; i < cities.length; i++) {
+        if (cities[i].isHot === 1) {
+          hotList.push(cities[i]);
+        }
+      }
+      //城市列表
+      for (var i = 0; i < cities.length; i++) {
+        var firstLetter = cities[i].py.substring(0, 1).toUpperCase();
+        //toCom函数判断首字母是否已存在
+        if (toCom(firstLetter)) {
+          //如果首字母不存在，新添加index
+          //新数组形式为[ { index : 'A' , list : [{ nm : '阿城' , id : 123 }] } ]
+          cityList.push({
+            index: firstLetter,
+            list: [{ nm: cities[i].nm, id: cities[i].id }],
+          });
+        } else {
+          //如果首字母已存在，累加到已有index中
+          //新数组形式为[ { index : 'A' , list : [{ nm : '阿城' , id : 123 }] } ]
+          for (var j = 0; j < cityList.length; j++) {
+            if (cityList[j].index === firstLetter) {
+              cityList[j].list.push({ nm: cities[i].nm, id: cities[i].id });
+            }
+          }
+        }
+      }
+      //对城市列表首字母进行排序
+      cityList.sort((n1, n2) => {
+        if (n1.index > n2.index) {
+          return 1;
+        } else if (n1.index < n2.index) {
+          return -1;
+        } else {
+          return 0;
+        }
+      });
+
+      //判断城市首字母是否已存在
+      function toCom(firstLetter) {
+        for (var i = 0; i < cityList.length; i++) {
+          //新数组形式为[ { index : 'A' , list : [{ nm : '阿城' , id : 123 }] } ]
+          if (cityList[i].index === firstLetter) {
+            return false;
+          }
+        }
+        return true;
+      }
+      //将结果返回
+      return {
+        cityList,
+        hotList,
+      };
+    },
+    //点击右侧大写字母跳转到城市列表指定位置
+    handleToIndex(index) {
+      var h2 = this.$refs.city_sort.getElementsByTagName("h2");
+      console.log(h2[index]);
+      //document.body.scrollTop网页被卷去的高;
+      //offsetTop:当前对象到其上级层顶部的距离.
+      //例如点击F，城市列表的父节点就卷去F到顶层的距离
+      this.$refs.city_sort.parentNode.scrollTop = h2[index].offsetTop;
+    },
+  },
 };
 </script>
 
@@ -158,3 +197,4 @@ export default {
   border-left: 1px #e6e6e6 solid;
 }
 </style>
+

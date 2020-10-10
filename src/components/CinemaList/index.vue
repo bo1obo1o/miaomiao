@@ -1,6 +1,6 @@
 <template>
-  <div class="cinema_body">
-    <ul>
+  <div id="cinema_body">
+    <!-- <ul>
       <li>
         <div>
           <span>大地影院(澳东世纪店)</span>
@@ -15,83 +15,41 @@
           <div>折扣卡</div>
         </div>
       </li>
-      <li>
-        <div>
-          <span>大地影院(澳东世纪店)</span>
-          <span class="q"><span class="price">22.9</span> 元起</span>
-        </div>
-        <div class="address">
-          <span>金州区大连经济技术开发区澳东世纪3层</span>
-          <span>1763.5km</span>
-        </div>
-        <div class="card">
-          <div>小吃</div>
-          <div>折扣卡</div>
-        </div>
-      </li>
-      <li>
-        <div>
-          <span>大地影院(澳东世纪店)</span>
-          <span class="q"><span class="price">22.9</span> 元起</span>
-        </div>
-        <div class="address">
-          <span>金州区大连经济技术开发区澳东世纪3层</span>
-          <span>1763.5km</span>
-        </div>
-        <div class="card">
-          <div>小吃</div>
-          <div>折扣卡</div>
-        </div>
-      </li>
-      <li>
-        <div>
-          <span>大地影院(澳东世纪店)</span>
-          <span class="q"><span class="price">22.9</span> 元起</span>
-        </div>
-        <div class="address">
-          <span>金州区大连经济技术开发区澳东世纪3层</span>
-          <span>1763.5km</span>
-        </div>
-        <div class="card">
-          <div>小吃</div>
-          <div>折扣卡</div>
-        </div>
-      </li>
-      <li>
-        <div>
-          <span>大地影院(澳东世纪店)</span>
-          <span class="q"><span class="price">22.9</span> 元起</span>
-        </div>
-        <div class="address">
-          <span>金州区大连经济技术开发区澳东世纪3层</span>
-          <span>1763.5km</span>
-        </div>
-        <div class="card">
-          <div>小吃</div>
-          <div>折扣卡</div>
-        </div>
-      </li>
-      <li>
-        <div>
-          <span>大地影院(澳东世纪店)</span>
-          <span class="q"><span class="price">22.9</span> 元起</span>
-        </div>
-        <div class="address">
-          <span>金州区大连经济技术开发区澳东世纪3层</span>
-          <span>1763.5km</span>
-        </div>
-        <div class="card">
-          <div>小吃</div>
-          <div>折扣卡</div>
-        </div>
-      </li>
-    </ul>
+    </ul> -->
+    {{cinemaList}}
   </div>
 </template>
 
 <script>
 export default {
   name: "CinemaList",
+  data() {
+    return {
+      cinemaList: null,
+    };
+  },
+  methods:{
+    //返回的是一个html页面的内容，本质还是一个字符串，因此可以使用字符串的方法来处理
+    decodeUnicode(str) {
+      str = str.replace(/\\/g, "%");
+      //转换中文
+      str = unescape(str);
+      //将其他受影响的转换回原来
+      str = str.replace(/%/g, "\\");
+      //对网址的链接进行处理
+      str = str.replace(/\\n/g, "");
+      str = str.replace(/\\t/g, "");
+      str = str.replace(/\\/g, "");
+      return str;
+    }
+  },
+  mounted() {
+    this.axios
+      .get("/ajax/moreCinemas?day=2020-10-10&offset=10&limit=20&districtId=-1&lineId=-1&hallType=-1&brandId=-1&serviceId=-1&areaId=-1&stationId=-1&item=&updateShowDay=true&reqId=1602296767512&cityId=10&optimus_uuid=D809CFB0FF1111EA8BC79F146444EC44CD717BBEE4AB4708A27735547C47B6C0&optimus_risk_level=71&optimus_code=10")
+      .then((res) => {
+        document.getElementById('cinema_body').innerHTML = this.decodeUnicode(res.data)
+      });
+  },
 };
 </script>
 

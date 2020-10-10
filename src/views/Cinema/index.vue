@@ -16,7 +16,6 @@
       <!-- 此处如果是二级路由则写成router-view的形式，此处只有一个组件所以直接引用 -->
       <CinemaList />
     </div>
-
     <TabBar />
   </div>
 </template>
