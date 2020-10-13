@@ -1,28 +1,34 @@
 <template>
   <div class="city_body">
     <div class="city_list">
-      <!-- 热门城市 -->
-      <div class="city_hot">
-        <h2>热门城市</h2>
-        <ul class="clearfix">
-          <li v-for="item in hotList" :key="item.id">
-            {{ item.nm }}
-          </li>
-        </ul>
-      </div>
-      <!-- 城市列表 -->
-      <div class="city_sort" ref="city_sort">
-        <!-- 新数组形式为[ { index : 'A' , list : [{ nm : '阿城' , id : 123 }] } ] -->
-        <div v-for="item in cityList" :key="item.index">
-          <h2>{{ item.index }}</h2>
-          <ul>
-            <li v-for="itemList in item.list" :key="itemList.id">
-              {{ itemList.nm }}
-            </li>
-          </ul>
-        </div>
-      </div>
+      <Loading v-if="isLoading" />
+        <Scroller v-else ref="city_List">
+          <div>
+            <!-- 热门城市 -->
+              <div class="city_hot">
+                <h2>热门城市</h2>
+                <ul class="clearfix">
+                  <li v-for="item in hotList" :key="item.id" @click="handleToCity(item.nm , item.id)">
+                    {{ item.nm }}
+                  </li>
+                </ul>
+              </div>
+              <!-- 城市列表 -->
+              <div class="city_sort" ref="city_sort">
+                <!-- 新数组形式为[ { index : 'A' , list : [{ nm : '阿城' , id : 123 }] } ] -->
+                <div v-for="item in cityList" :key="item.index">
+                  <h2>{{ item.index }}</h2>
+                  <ul>
+                    <li v-for="itemList in item.list" :key="itemList.id" @click="handleToCity(itemList.nm , itemList.id)">
+                      {{ itemList.nm }}
+                    </li>
+                  </ul>
+                </div>
+              </div>
+          </div>
+        </Scroller>
     </div>
+    
     <!-- 右侧字母索引 -->
     <div class="city_index">
       <ul>
@@ -45,17 +51,33 @@ export default {
     return {
       cityList: [],
       hotList: [],
+      isLoading : true
     };
   },
   mounted() {
-    this.axios.get("/dianying/cities.json").then((res) => {
-      var cities = res.data.cts;
-      //将获取到的城市数据分为数组[ { index : 'A' , list : [{ nm : '阿城' , id : 123 }] } ]
-      var { cityList, hotList } = this.formatCityList(cities);
-      //用formatCityList函数的返回值对列表赋值
-      this.cityList = cityList;
-      this.hotList = hotList;
-    });
+        var cityList = window.localStorage.getItem('cityList');
+        var hotList = window.localStorage.getItem('hotList');
+
+        if(cityList && hotList){
+            this.cityList = JSON.parse(cityList);
+            this.hotList = JSON.parse(hotList);
+            this.isLoading = false;
+        }else{
+            this.axios.get("/dianying/cities.json").then((res) => {
+            var cities = res.data.cts;
+            this.isLoading = false;
+            //将获取到的城市数据分为数组[ { index : 'A' , list : [{ nm : '阿城' , id : 123 }] } ]
+            var { cityList, hotList } = this.formatCityList(cities);
+            //用formatCityList函数的返回值对列表赋值
+            this.cityList = cityList;
+            this.hotList = hotList;
+            //数据获取成功后保存在本地，以字符串形式的数组结构保存
+            window.localStorage.setItem('cityList' , JSON.stringify(cityList));
+            window.localStorage.setItem('hotList' , JSON.stringify(hotList));
+            });
+          }
+
+    
   },
   methods: {
     formatCityList(cities) {
@@ -124,6 +146,16 @@ export default {
       //例如点击F，城市列表的父节点就卷去F到顶层的距离
       this.$refs.city_sort.parentNode.scrollTop = h2[index].offsetTop;
     },
+    //为城市名添加点击事件
+    handleToCity(nm,id){
+      //调用mutation下的方法，传入城市名和id，改变state的nm和id
+      this.$store.commit('city/CITY_INFO',{ nm , id });
+      //将目前的城市存入localStorage
+      window.localStorage.setItem('nowNm',nm);
+      window.localStorage.setItem('nowId',id);
+      //点击城市后切换到指定路由
+      this.$router.push('/movie/nowPlaying');
+    }
   },
 };
 </script>

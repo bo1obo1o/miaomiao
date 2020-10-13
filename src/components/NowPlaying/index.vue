@@ -1,32 +1,36 @@
 <template>
-  <div class="movie_body">
-    <ul>
-      <li v-for="item in movieList" :key="item.id">
-        <div class="pic_show">
-          <!-- 图片链接中的w.h用来设置尺寸，此处使用全局过滤器设置 -->
-          <img
-            :src="item.img | setWh('128.180')"
-            onerror="this.style.visibility='hidden'"
-          />
-        </div>
-        <div class="info_list">
-          <h2>
-            {{ item.nm
-            }}<img
-              v-if="item.version == 'v3d imax'"
-              src="@/assets/maxs.png"
-              alt=""
+  <div class="movie_body" ref="movie_body">
+    <Loading v-if="isLoading" />
+    <Scroller v-else :handleToScroll="handleToScroll" :handleToTouchEnd="handleToTouchEnd">
+      <ul>
+        <li class="pullDown">{{pullDownMsg}}</li>
+        <li v-for="item in movieList" :key="item.id">
+          <div class="pic_show" @click="handleToDetail()">
+            <!-- 图片链接中的w.h用来设置尺寸，此处使用全局过滤器设置 -->
+            <img
+              :src="item.img | setWh('128.180')"
+              onerror="this.style.visibility='hidden'"
             />
-          </h2>
-          <p>
-            观众评 <span class="grade">{{ item.sc }}</span>
-          </p>
-          <p>主演: {{ item.star }}</p>
-          <p>{{ item.showInfo }}</p>
-        </div>
-        <div class="btn_mall">购票</div>
-      </li>
-    </ul>
+          </div>
+          <div class="info_list">
+            <h2>
+              {{ item.nm
+              }}<img
+                v-if="item.version == 'v3d imax'"
+                src="@/assets/maxs.png"
+                alt=""
+              />
+            </h2>
+            <p>
+              观众评 <span class="grade">{{ item.sc }}</span>
+            </p>
+            <p>主演: {{ item.star }}</p>
+            <p>{{ item.showInfo }}</p>
+          </div>
+          <div class="btn_mall">购票</div>
+        </li>
+      </ul>
+    </Scroller>
   </div>
 </template>
 
@@ -36,17 +40,51 @@ export default {
   data() {
     return {
       movieList: [],
+      pullDownMsg:'',
+      isLoading:true,
+      prevCityId:-1
     };
   },
-  mounted() {
+  //在keep-alive情况下，触发过的mounted不会再次触发
+  //此处使用activated
+  activated() {
+    var cityId = this.$store.state.city.id;
+    if( this.prevCityId === cityId ){ return; }
+    this.isLoading = true;
     this.axios
       .get(
-        "/ajax/movieOnInfoList?token=&optimus_uuid=D809CFB0FF1111EA8BC79F146444EC44CD717BBEE4AB4708A27735547C47B6C0&optimus_risk_level=71&optimus_code=10"
+        "/ajax/movieOnInfoList?token=&optimus_uuid=D809CFB0FF1111EA8BC79F146444EC44CD717BBEE4AB4708A27735547C47B6C0&optimus_risk_level=71&optimus_code="+cityId
       )
       .then((res) => {
         this.movieList = res.data.movieList;
+        this.isLoading = false;
+        this.prevCityId = cityId;        
       });
   },
+  methods:{
+    handleToDetail(){
+      console.log('123sda')
+    },
+    handleToScroll(pos){
+            if( pos.y > 30 ){
+                this.pullDownMsg = '正在更新中';
+            }
+        },
+    handleToTouchEnd(pos){
+        if( pos.y > 30 ){
+          this.axios.get(
+            "/ajax/movieOnInfoList?token=&optimus_uuid=D809CFB0FF1111EA8BC79F146444EC44CD717BBEE4AB4708A27735547C47B6C0&optimus_risk_level=71&optimus_code=10"
+          ).then(res=>{
+            this.pullDownMsg='更新成功';
+            setTimeout(()=>{
+              this.movieList = res.data.movieList;
+              this.isLoading = false;
+              this.pullDownMsg=''
+            },1000);                  
+          })       
+      }
+    }
+  }
 };
 </script>
 
@@ -120,5 +158,8 @@ export default {
 }
 .movie_body .btn_pre {
   background-color: #3c9fe6;
+}
+.movie_body .pullDown{
+  margin:0;padding:0;border:none;
 }
 </style>
