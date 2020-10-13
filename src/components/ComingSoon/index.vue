@@ -1,6 +1,9 @@
 <template>
   <div class="movie_body">
+    <Loading v-if="isLoading" />
+    <Scroller v-else :handleToScroll="handleToScroll" :handleToTouchEnd="handleToTouchEnd">
     <ul>
+      <li class="pullDown">{{pullDownMsg}}</li>
       <li v-for="item in comingList" :key="item.id">
         <div class="pic_show"><img :src="item.img | setWh('128.180')" /></div>
         <div class="info_list">
@@ -14,6 +17,7 @@
         <div class="btn_pre">预售</div>
       </li>
     </ul>
+    </Scroller>
   </div>
 </template>
 
@@ -23,17 +27,46 @@ export default {
   data() {
     return {
       comingList: [],
+      pullDownMsg:'',
+      isLoading:true,
+      prevCityId:-1
     };
   },
-  mounted() {
+  activated() {
+    var cityId = this.$store.state.city.id;
+    if( this.prevCityId === cityId ){ return; }
+    this.isLoading = true;
     this.axios
       .get(
-        "/ajax/comingList?ci=10&token=&limit=10&optimus_uuid=D809CFB0FF1111EA8BC79F146444EC44CD717BBEE4AB4708A27735547C47B6C0&optimus_risk_level=71&optimus_code=10"
+        "/ajax/comingList?ci="+cityId+"&token=&limit=10&optimus_uuid=D809CFB0FF1111EA8BC79F146444EC44CD717BBEE4AB4708A27735547C47B6C0&optimus_risk_level=71&optimus_code=10"
       )
       .then((res) => {
         this.comingList = res.data.coming;
+        this.isLoading = false;
+         this.prevCityId = cityId;  
       });
   },
+  methods:{
+     handleToScroll(pos){
+            if( pos.y > 30 ){
+                this.pullDownMsg = '正在更新中';
+            }
+        },
+    handleToTouchEnd(pos){
+        if( pos.y > 30 ){
+          this.axios.get(
+            "/ajax/movieOnInfoList?token=&optimus_uuid=D809CFB0FF1111EA8BC79F146444EC44CD717BBEE4AB4708A27735547C47B6C0&optimus_risk_level=71&optimus_code=10"
+          ).then(res=>{
+            this.pullDownMsg='更新成功';
+            setTimeout(()=>{
+              this.movieList = res.data.movieList;
+              this.isLoading = false;
+              this.pullDownMsg=''
+            },1000);                  
+          })       
+      }
+    }
+  }
 };
 </script>
 

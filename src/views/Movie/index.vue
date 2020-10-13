@@ -5,7 +5,8 @@
       <!-- 导航部分 -->
       <div class="movie_menu">
         <router-link tag="div" to="/movie/city" class="city_name">
-          <span>大连</span><i class="iconfont icon-lower-triangle"></i>
+        <!-- 此处使用store下city模块的state，拼接上了父级名 -->
+          <span>{{$store.state.city.nm}}</span><i class="iconfont icon-lower-triangle"></i>
         </router-link>
         <div class="hot_swtich">
           <router-link tag="div" to="/movie/nowPlaying" class="hot_item">
