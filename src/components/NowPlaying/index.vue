@@ -5,7 +5,7 @@
       <ul>
         <li class="pullDown">{{pullDownMsg}}</li>
         <li v-for="item in movieList" :key="item.id">
-          <div class="pic_show" @click="handleToDetail()">
+          <div class="pic_show" @click="handleToDetail(item.id)">
             <!-- 图片链接中的w.h用来设置尺寸，此处使用全局过滤器设置 -->
             <img
               :src="item.img | setWh('128.180')"
@@ -62,8 +62,8 @@ export default {
       });
   },
   methods:{
-    handleToDetail(){
-      console.log('123sda')
+    handleToDetail(movieId){
+      this.$router.push('/movie/detail/1/' + movieId);
     },
     handleToScroll(pos){
             if( pos.y > 30 ){
