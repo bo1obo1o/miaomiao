@@ -7,6 +7,7 @@
         <Loading v-if="isLoading" />
 		<div v-else id="content" class="contentDetail">
             <div class="detail_list">
+                <!-- style中不支持过滤器的写法，因此使用repalce设置宽和高 -->
 				<div class="detail_list_bg" :style="{ 'background-image' : 'url('+ detailMovie.img.replace(/w\.h/,'148.208') +')' }"></div>
 				<div class="detail_list_filter"></div>
 				<div class="detail_list_content">
